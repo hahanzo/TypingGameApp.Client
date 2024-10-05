@@ -1,0 +1,10 @@
+<button class="btn btn-dark" (click)="onLogout()">Logout</button>
+<div class="lobby-creation">
+    <h2>Create a Lobby</h2>
+    <select [(ngModel)]="selectedOption" (change)="onOptionSelected($event)">
+        <option *ngFor="let option of options" [value]="option">{{ option }}</option>
+      </select>
+      
+      <p>You selected: {{ selectedOption }}</p>
+    <button (click)="createLobby()">Create Lobby</button>
+</div>
