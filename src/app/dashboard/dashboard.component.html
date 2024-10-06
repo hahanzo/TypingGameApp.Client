@@ -1,10 +1,30 @@
-<button class="btn btn-dark" (click)="onLogout()">Logout</button>
-<div class="lobby-creation">
-    <h2>Create a Lobby</h2>
-    <select [(ngModel)]="selectedOption" (change)="onOptionSelected($event)">
-        <option *ngFor="let option of options" [value]="option">{{ option }}</option>
+<div class="container mt-3">
+  <div class="card p-4">
+      <button class="btn btn-dark mb-3" (click)="onLogout()">Logout</button>
+
+      <h2 class="text-center mb-4">Create a Lobby</h2>      
+
+      <label for="difficulty">Difficulty:</label>
+      <select [(ngModel)]="difficulty" id="difficulty" class="form-control">
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
       </select>
+
+      <label for="timer">Timer (seconds):</label>
+      <input type="number" [(ngModel)]="timer" id="timer" min="30" max="300" class="form-control mb-4" />
       
-      <p>You selected: {{ selectedOption }}</p>
-    <button (click)="createLobby()">Create Lobby</button>
+      <button class="btn btn-primary btn-block mb-4" (click)="createLobby()">Create Lobby</button>
+          
+      <button *ngIf="lobbyId" class="btn btn-danger btn-block mb-3" (click)="deleteLobby()">Delete Lobby</button>
+      <p *ngIf="lobbyId" class="text-center">You have an active lobby: <strong>{{ lobbyId }}</strong></p>
+  </div>
+  <div class="card p-4">
+    <h2 class="text-center mb-4">Join a Lobby</h2>
+    
+    <label for="lobbyId">Lobby ID:</label>
+    <input type="text" id="lobbyId" class="form-control" [(ngModel)]="joinlobbyId" placeholder="Enter Lobby ID" required />
+
+    <button class="btn btn-primary btn-block mb-3" (click)="joinLobby()">Join Lobby</button>
+  </div>
 </div>
