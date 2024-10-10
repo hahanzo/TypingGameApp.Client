@@ -1,0 +1,21 @@
+<div class="container mt-5">
+  <div class="card p-4 shadow">
+    <h2 class="text-center">Lobby ID: {{ lobbyId }}</h2>
+
+    <div class="d-flex justify-content-center mb-4">
+      <button class="btn btn-danger mx-2" (click)="deleteLobby()">Delete lobby</button>
+      <button class="btn btn-dark mx-2" (click)="leaveLobby()">Leave lobby</button>
+      <button class="btn btn-dark mx-2" (click)="startGame()">Start game</button>
+    </div>
+
+    <div *ngIf="players.length > 0">
+      <h3 class="text-center">Player List:</h3>
+      <ul class="list-group">
+        <li class="list-group-item" *ngFor="let player of players">{{ player }}</li>
+      </ul>
+    </div>
+    <div *ngIf="players.length === 0" class="text-center">
+      <p class="text-muted">No players in the lobby.</p>
+    </div>
+  </div>
+</div>

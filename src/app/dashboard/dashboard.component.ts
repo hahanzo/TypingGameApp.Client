@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SignalRService } from '../shared/services/signalr.service';
 import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
-import { jwtDecode } from 'jwt-decode';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -14,15 +13,13 @@ import { jwtDecode } from 'jwt-decode';
 })
 
 export class DashboardComponent {
-  difficulty: string = 'easy';  // default difficulty
-  timer: number = 60;           // default timer value in seconds
+  difficulty: string = 'easy';
+  timer: number = 60;
   lobbyId: string | null = null;
   joinlobbyId: string | null = null;
-  username: string | null = null;
 
   constructor(private router: Router,
-    private signalRService: SignalRService,
-    private toastr: ToastrService) 
+    private signalRService: SignalRService) 
   { 
     this.signalRService.startConnection();
   }
@@ -31,12 +28,6 @@ export class DashboardComponent {
     this.signalRService.lobbyId$.subscribe(lobbyId => {
       this.lobbyId = lobbyId;
     });
-
-    const token = localStorage.getItem('jwt'); // Assuming you stored the token in local storage
-    if (token) {
-      const decoded: any = jwtDecode(token);
-      this.username = decoded.username; // Adjust this depending on your JWT structure
-    }
   }
   
   onLogout() {
@@ -45,28 +36,18 @@ export class DashboardComponent {
   }
 
   createLobby() {
-    if (this.lobbyId) {
-      this.toastr.warning('You already have an active lobby. Delete it before creating a new one.');
-    } else {
-      this.signalRService.createLobby(String(this.username), this.difficulty, this.timer).then(lobbyId => {
-        this.toastr.success('Lobby successfully created!');
-        this.router.navigate(['/lobby']);
-      });
-    }
+    this.signalRService.createLobby(this.difficulty, this.timer);
   }
 
   deleteLobby() {
     if (this.lobbyId) {
       this.signalRService.deleteLobby(this.lobbyId);
-      this.toastr.info('The lobby has been removed.');
     }
   }
 
   joinLobby() {
     if(this.joinlobbyId){
       this.signalRService.joinLobby(this.joinlobbyId);
-      this.toastr.success('Joining the lobby was successful');
-      this.router.navigate(['/lobby']);
     }
   }
 }

@@ -1,0 +1,12 @@
+span {
+    padding: 5px;
+}
+ 
+.highlight {
+    background-color: green;
+}
+  
+.error {
+    color: red;
+}
+  

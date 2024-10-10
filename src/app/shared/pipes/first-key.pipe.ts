@@ -4,6 +4,7 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'firstKey',
   standalone: true
 })
+
 export class FirstKeyPipe implements PipeTransform {
 
   transform(value: any): string | null {

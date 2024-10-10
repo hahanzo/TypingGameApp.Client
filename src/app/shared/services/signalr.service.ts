@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { Observable, Subject, BehaviorSubject  } from 'rxjs';
+import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
+import { jwtDecode } from 'jwt-decode';
 
 
 @Injectable({
@@ -9,18 +12,44 @@ import { Observable, Subject, BehaviorSubject  } from 'rxjs';
 export class SignalRService {
   private hubConnection: signalR.HubConnection;
   
+  private lobbySubject = new BehaviorSubject<any>(null);
+  private lobby$: Observable<any>  = this.lobbySubject.asObservable();
+
+  private playerJoinedSubject = new BehaviorSubject<string[]>([]);
+  public playerJoined$: Observable<string[]> = this.playerJoinedSubject.asObservable();
+
   private lobbyIdSubject = new BehaviorSubject<string | null>(null);
-  public lobbyId$ = this.lobbyIdSubject.asObservable();
+  public lobbyId$: Observable<string | null> = this.lobbyIdSubject.asObservable();
 
-  private playerJoinedSubject$ = new BehaviorSubject<string[]>([]);
+  private gameTextSubject = new BehaviorSubject<string | null>(null);
+  public gameText$: Observable<string | null> = this.gameTextSubject.asObservable();
 
-  private gameStartedSubject = new Subject<{ text: string, timer: number }>();
-  private gameEndedSubject = new Subject<{ winner: string, wpm: number }>();
+  private gameTimeSubject  = new BehaviorSubject<string | null>(null);
+  public gameTime$: Observable<string | null> = this.gameTimeSubject.asObservable();
 
-  constructor() {
+  // private winnerSubject  = new BehaviorSubject<string | null>(null);
+  // public winner$: Observable<string | null> = this.winnerSubject.asObservable();
+
+  // private winnerWPMSubject  = new BehaviorSubject<string | null>(null);
+  // public winnerWPM$: Observable<string | null> = this.winnerWPMSubject.asObservable();
+
+  private playerId: string | null = null;
+  private username: string | null = null;
+
+  constructor(private router: Router,
+    private toastr: ToastrService) 
+  {
     this.hubConnection = new signalR.HubConnectionBuilder()
       .withUrl('http://localhost:5198/gamehub')
       .build();
+
+      const token = localStorage.getItem('token');
+      if (token) {
+        const decoded: any = jwtDecode(token);
+        this.playerId = decoded.UserID;
+        this.username = decoded.UserName;
+        console.log(`Plaeyr joined Id:${this.playerId} UserName:${this.username }`);
+      }
   }
 
   startConnection(): void {
@@ -28,53 +57,134 @@ export class SignalRService {
       .start()
       .then(() => console.log('Connection started'))
       .catch(err => console.log('Error while starting connection: ' + err));
-    
-      this.hubConnection.on('UpdatePlayerList', (playerNames: string[]) => {
-        this.playerJoinedSubject$.next(playerNames);
-      });
+
+      this.addListeners();
   }
 
-  createLobby(username: string, difficulty: string, timer: number): Promise<string> {
+  private addListeners() {
+    //Create lobbu listeners
+    this.hubConnection.off('LobbyCreationError');
+    this.hubConnection.on('LobbyCreationError', message => {
+      this.toastr.warning(message);
+    });
+
     this.hubConnection.off('CreateLobby');
-    this.hubConnection.on('CreateLobby', lobbyId => {
+    this.hubConnection.on('CreateLobby', (lobby, lobbyId) => {
+      this.lobbySubject.next(lobby);
+      const playerNames = lobby.players.map((player: { userName: any; }) => player.userName);
+      this.playerJoinedSubject.next(playerNames);
       this.lobbyIdSubject.next(lobbyId);
+      this.toastr.success('Lobby successfully created!');
+      this.router.navigate(['/lobby']);
       console.log(`Lobby was created with id: ${lobbyId}`);
     });
-    return this.hubConnection.invoke('CreateLobby',username, difficulty, timer);
-  }
 
-  deleteLobby(lobbyId: string) {
+    //Delete lobby listeners
+    this.hubConnection.off('LobbySuccessError');
+    this.hubConnection.on('LobbySuccessError', message => {
+      this.toastr.error(message)
+    });
+
+    this.hubConnection.off('LobbyDeletedMessage');
+    this.hubConnection.on('LobbyDeletedMessage', message => {
+      this.lobbyIdSubject.next(null);
+      this.router.navigate(['/dashboard']);
+      this.toastr.info(message)
+    });
+
     this.hubConnection.off('LobbyDeletedSuccessfully');
     this.hubConnection.on('LobbyDeletedSuccessfully', message => {
+      this.toastr.info(message);
+      this.router.navigate(['/dashboard']);
+      console.log(message);
+    });
+
+    this.hubConnection.off('LobbyDeletedError');
+    this.hubConnection.on('LobbyDeletedError', message => {
+      this.toastr.info(message);
+      this.router.navigate(['/dashboard']);
       this.lobbyIdSubject.next(null);
       console.log(message);
     });
+
+    //Join lobby listeners
+    this.hubConnection.off('PlayerConnectionExist');
+    this.hubConnection.on('PlayerConnectionExist', message => {
+      this.router.navigate(['/lobby']);
+      this.toastr.info(message)
+    });
+
+    this.hubConnection.off('PlayerJoined');
+    this.hubConnection.on('PlayerJoined', (lobby, username, lobbyId) => {
+      this.lobbySubject.next(lobby);
+      this.lobbyIdSubject.next(lobbyId);
+      const playerNames = lobby.players.map((player: { userName: any; }) => player.userName);
+      this.playerJoinedSubject.next(playerNames);
+      this.toastr.success(`Player ${username} joined to lobby`);
+      this.router.navigate(['/lobby']);
+      console.log(`Player ${username} joined`);
+    });
+
+    //Leave lobby listeners
+    this.hubConnection.off('PlayerLeft');
+    this.hubConnection.on('PlayerLeft', (lobby, username, lobbyId) => {
+      this.lobbySubject.next(lobby);
+      this.lobbyIdSubject.next(lobbyId);
+      const playerNames = lobby.players.map((player: { userName: any; }) => player.userName);
+      this.playerJoinedSubject.next(playerNames);
+      this.toastr.info(`Player ${username} left the lobby`);
+      if(this.username === username){
+        this.router.navigate(['/dashboard']);
+      }
+      console.log(`Player ${username} left the lobby`);
+    });
+
+    //Start game listeners
+    this.hubConnection.off('StartGame');
+    this.hubConnection.on('StartGame', (text, timer) => {
+      this.gameTextSubject.next(text);
+      this.gameTimeSubject.next(timer);
+      this.router.navigate(['/game']);
+    });
+
+    this.hubConnection.off('StartGameMessage');
+    this.hubConnection.on("StartGameMessage", message => {
+      this.toastr.success(message);
+    });
+
+    //Submit result listeners
+    this.hubConnection.off('GameStartSuccessError');
+    this.hubConnection.on('GameStartSuccessError', message => {
+      this.toastr.error(message)
+    });
+
+    this.hubConnection.off('GameEnded');
+    this.hubConnection.on('GameEnded', (winner, wpm) => {
+      this.toastr.info(`Winer of game ${winner} with wpm ${wpm}`);
+    });
+  }
+
+  createLobby(difficulty: string, timer: number): Promise<string> {
+    return this.hubConnection.invoke('CreateLobby', this.username, difficulty, timer);
+  }
+
+  deleteLobby(lobbyId: string) {
     this.hubConnection.invoke('DeleteLobby', lobbyId)
   }
 
   joinLobby(lobbyId: string): void {
-    this.hubConnection.off('PlayerJoined');
-    this.hubConnection.on('PlayerJoined', message => {
-      console.log("Player with id joined:",message);
-    });
-    this.hubConnection.invoke('JoinLobby', lobbyId);
+    this.hubConnection.invoke('JoinLobby', this.username, lobbyId);
   }
 
   leaveLobby(lobbyId: string): void {
-    this.hubConnection.invoke('LeaveLobby', lobbyId);
+    this.hubConnection.invoke('LeaveLobby', this.username, lobbyId);
   }
 
   startGame(lobbyId: string): void {
     this.hubConnection.invoke('StartGame', lobbyId);
-    this.hubConnection.on('StartGame', (text, timer) => {
-      this.gameStartedSubject.next({ text, timer });
-    });
   }
 
-  submitResult(lobbyId: string, playerId: string, wpm: number): void {
-    this.hubConnection.invoke('SubmitResult', lobbyId, playerId, wpm);
-    this.hubConnection.on('GameEnded', (winner, wpm) => {
-      this.gameEndedSubject.next({ winner, wpm });
-    });
+  submitResult(lobbyId: string, wpm: number): void {
+    this.hubConnection.invoke('SubmitResult', lobbyId, this.username, wpm);
   }
 }

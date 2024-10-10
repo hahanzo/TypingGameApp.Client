@@ -1,0 +1,62 @@
+<div class="container">
+    <div class="row vh-100 align-items-center">
+        <div class="col-xxl-6 offset-xxl-3 col-lg-8 offset-lg-2 col-12">
+            <div class="rounded-4 border-0 shadow-lg bg-dark p-4" style="min-height: 550px;"> <!-- Increased height -->
+                <div class="d-flex flex-column">
+                    <h1 class="text-center mb-4" style="font-size: 3rem;">{{ title }}!</h1> <!-- Larger title -->
+
+                    <div class="mb-3 text-center" style="font-size: 1.5rem;"> <!-- Larger sentence font -->
+                        <span *ngFor="let word of sentence; index as i" [ngClass]="{highlight:index==i}">{{word}} </span>
+                    </div>
+
+                    <div class="mb-3 text-center">
+                        <input 
+                          [value]="userInput" 
+                          (keyup)="checkWord($event, $any($event).target.value, index)" 
+                          type="text"
+                          [disabled]="isGameOver"
+                          style="font-size: 1.5rem; width: 100%; padding: 0.5rem;"
+                        />
+                    </div>
+
+                    <div class="mb-3 text-center">
+                        <span class="error" style="font-size: 1.5rem;">{{errorMessage}}</span> <!-- Larger error message -->
+                    </div>
+
+                    <div class="results mb-3 text-center" style="font-size: 1.25rem;"> <!-- Larger results font -->
+                        <div>
+                            <span>Sentence length: {{sentence.length}}</span>
+                        </div>
+                        <div>
+                            <span>Words typed: {{totalWordsTyped}}</span>
+                        </div>
+                        <div>
+                            <span>Possible mistakes: {{possibleMistakes}}</span>
+                        </div>
+                        <div>
+                            <span>Correct characters: {{correct}}</span>
+                        </div>
+                        <div>
+                            <span>Errors: {{errors}}</span>
+                        </div>
+                        <div>
+                            <span>Words per minute: {{WPM}}</span>
+                        </div>
+                        <div>
+                            <span>Accuracy: {{accuracy}}%</span>
+                        </div>
+                        <div>
+                            <span>Time left: {{timeLeft}} seconds</span> <!-- Timer display -->
+                        </div>
+                    </div>
+
+                    <div class="text-center" *ngIf="isGameOver">
+                        <button class="btn btn-success" (click)="returnToLobby()" style="font-size: 1.5rem; padding: 0.75rem 1.5rem;">
+                            Return to lobby
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
