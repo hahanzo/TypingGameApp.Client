@@ -5,7 +5,6 @@ import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { jwtDecode } from 'jwt-decode';
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -27,11 +26,10 @@ export class SignalRService {
   private gameTimeSubject  = new BehaviorSubject<string | null>(null);
   public gameTime$: Observable<string | null> = this.gameTimeSubject.asObservable();
 
-  // private winnerSubject  = new BehaviorSubject<string | null>(null);
-  // public winner$: Observable<string | null> = this.winnerSubject.asObservable();
+  private gameSeedSubject  = new BehaviorSubject<string | null>(null);
+  public gameSeed$: Observable<string | null> = this.gameSeedSubject.asObservable();
 
-  // private winnerWPMSubject  = new BehaviorSubject<string | null>(null);
-  // public winnerWPM$: Observable<string | null> = this.winnerWPMSubject.asObservable();
+  private lobbyUI = new BehaviorSubject<string | null>(null);
 
   private playerId: string | null = null;
   private username: string | null = null;
@@ -40,7 +38,7 @@ export class SignalRService {
     private toastr: ToastrService) 
   {
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl('http://localhost:5198/gamehub')
+      .withUrl('')
       .build();
 
       const token = localStorage.getItem('token');
@@ -73,6 +71,7 @@ export class SignalRService {
       this.lobbySubject.next(lobby);
       const playerNames = lobby.players.map((player: { userName: any; }) => player.userName);
       this.playerJoinedSubject.next(playerNames);
+      this.lobbyUI = lobby.lobbyUI;
       this.lobbyIdSubject.next(lobbyId);
       this.toastr.success('Lobby successfully created!');
       this.router.navigate(['/lobby']);
@@ -119,6 +118,8 @@ export class SignalRService {
       this.lobbySubject.next(lobby);
       this.lobbyIdSubject.next(lobbyId);
       const playerNames = lobby.players.map((player: { userName: any; }) => player.userName);
+      this.lobbyUI = lobby.lobbyUI;
+      this.lobbyIdSubject.next(lobbyId);
       this.playerJoinedSubject.next(playerNames);
       this.toastr.success(`Player ${username} joined to lobby`);
       this.router.navigate(['/lobby']);
@@ -133,7 +134,7 @@ export class SignalRService {
       const playerNames = lobby.players.map((player: { userName: any; }) => player.userName);
       this.playerJoinedSubject.next(playerNames);
       this.toastr.info(`Player ${username} left the lobby`);
-      if(this.username === username){
+      if(this.username === username) {
         this.router.navigate(['/dashboard']);
       }
       console.log(`Player ${username} left the lobby`);
@@ -141,10 +142,11 @@ export class SignalRService {
 
     //Start game listeners
     this.hubConnection.off('StartGame');
-    this.hubConnection.on('StartGame', (text, timer) => {
+    this.hubConnection.on('StartGame', (seed, text, timer) => {
+      this.gameSeedSubject.next(seed);
       this.gameTextSubject.next(text);
       this.gameTimeSubject.next(timer);
-      this.router.navigate(['/game']);
+      this.router.navigate([`/${this.lobbyUI}`]);
     });
 
     this.hubConnection.off('StartGameMessage');
@@ -164,8 +166,8 @@ export class SignalRService {
     });
   }
 
-  createLobby(difficulty: string, timer: number): Promise<string> {
-    return this.hubConnection.invoke('CreateLobby', this.username, difficulty, timer);
+  createLobby(difficulty: string, timer: number, lobbyUI:string): Promise<string> {
+    return this.hubConnection.invoke('CreateLobby', this.username, difficulty, timer, lobbyUI);
   }
 
   deleteLobby(lobbyId: string) {

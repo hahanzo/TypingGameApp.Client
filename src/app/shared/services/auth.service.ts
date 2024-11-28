@@ -7,7 +7,7 @@ import { Injectable } from '@angular/core';
 export class AuthService {
 
   constructor(private http:HttpClient) { }
-  baseURL = 'http://localhost:5198/api';
+  baseURL = '';
 
   createUser(formData:any){
     return this.http.post(this.baseURL+'/signup',formData)

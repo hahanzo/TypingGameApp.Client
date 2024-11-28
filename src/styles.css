@@ -1,7 +1,15 @@
 /* You can add global styles to this file, and also import other style files */
+:root {
+    --primary: tomato;
+    --fg-100: hsl(220 20% 98%);
+    --fg-200: hsl(220 20% 80%);
+    --bg-100: hsl(220 20% 14%);
+}
+
 body{
     font-family: "Roboto Mono", monospace;
-    color: aliceblue;
+    color: var(--fg-100);
+    background-color: var(--bg-100); 
 }
 
 /* form validation */

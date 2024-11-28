@@ -10,7 +10,6 @@ import { ToastrService } from 'ngx-toastr';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
-  styles: ``
 })
 
 export class LoginComponent {
@@ -45,7 +44,6 @@ export class LoginComponent {
             this.toastr.error('Incorrect email or password.', 'Login failed')
           else
             console.log('error during login:\n', err);
-
         }
       })
     }

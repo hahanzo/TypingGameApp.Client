@@ -1,0 +1,130 @@
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: tomato;
+  --fg-100: hsl(220 20% 98%);
+  --fg-200: hsl(220 20% 80%);
+  --bg-100: hsl(220 20% 14%);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  opacity: 0.4;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  cursor: pointer;
+  opacity: 1;
+}
+
+h1 {
+  font-family: 'Lexend Deca', sans-serif;
+  font-size: 1.8rem;
+  color: var(--fg-200);
+  letter-spacing: 2px;
+}
+
+.container {
+  font-family: 'Roboto Mono', monospace;
+  color: var(--fg-100);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%; 
+  padding: 2rem;
+  background-color: var(--bg-100);
+  max-width: 800px; 
+  width: 100%; 
+  margin: 0 auto; 
+  border-radius: 8px; 
+}
+
+.words {
+  --line-height: 1em;
+  --lines: 3;
+
+  width: 100%;
+  max-height: calc(var(--line-height) * var(--lines) * 1.42);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  position: relative;
+  font-size: 2rem;
+  line-height: var(--line-height);
+  overflow-y: hidden;
+  user-select: none;
+}
+
+.words .letter {
+  opacity: 0.4;
+  transition: all 0.3s ease;
+}
+
+.words .letter.correct {
+  opacity: 0.8;
+}
+
+.words .letter.incorrect {
+  color: var(--primary);
+  opacity: 1;
+}
+
+.caret {
+  position: absolute;
+  height: 2rem;
+  top: 0;
+  border-right: 1px solid tomato;
+  animation: caret 1s infinite;
+  transition: all 0.2s ease;
+
+  @keyframes caret {
+    0%
+    to {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+}
+
+.time {
+  top: -48px;
+  font-size: 1.5rem;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.results {
+
+  .title {
+    font-size: 2rem;
+    color: var(--fg-200);
+  }
+
+  .score {
+    font-size: 4rem;
+    color: var(--primary);
+  }
+
+  .returnToLobby {
+    margin-top: 1rem;
+  }
+}
+
+.input {
+  position: absolute;
+  opacity: 0;
+}

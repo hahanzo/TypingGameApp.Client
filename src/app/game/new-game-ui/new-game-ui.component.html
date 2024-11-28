@@ -1,0 +1,43 @@
+<div class="container">
+  <nav>
+    <h1>Typerorr</h1>
+    
+  </nav>
+
+  <main>
+    <div *ngIf="game !== 'game over'" class="game" [attr.data-game]="game">
+      <input
+      [(ngModel)]="typedLetter"
+      (input)="updateGameState()"
+      (keydown)="handleKeydown($event)"
+      class="input"
+      type="text"
+      #inputEl>
+      <div class="time">{{seconds}}</div>
+
+      <div #wordsEl class="words">
+        <span *ngFor="let part of words">
+          <span class="word">
+            <span *ngFor="let letter of part.split('')" class="letter">{{ letter }}</span>
+          </span>
+        </span>
+        <div #caretEl class="caret"></div>
+      </div>
+    </div>
+
+    <div *ngIf="game === 'game over'" class="results">
+      <div>
+        <p class="title">Wpm</p>
+        <p class="score">{{ wordsPerMinute | number:'1.0-0' }}</p>  <!-- Виведення округленого значення wpm -->
+      </div>
+    
+      <div>
+        <p class="title">Accuracy</p>
+        <p class="score">{{ accuracy | number:'1.0-0' }}%</p>  <!-- Виведення округленого значення accuracy -->
+      </div>
+
+      <button class="returnToLobby" (click)="returnToLobby()">Return to lobby</button>
+    </div>
+
+  </main>
+</div>

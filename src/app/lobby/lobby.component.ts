@@ -1,6 +1,8 @@
 import { Component} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SignalRService } from '../shared/services/signalr.service';
+import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-lobby',
@@ -13,7 +15,7 @@ export class LobbyComponent{
   lobbyId: string | null = null;
   players: string[] = [];
 
-  constructor(private signalRService: SignalRService){}
+  constructor(private signalRService: SignalRService,  private router: Router){}
 
   ngOnInit(): void {
     this.signalRService.lobbyId$.subscribe(lobbyId => {
@@ -23,14 +25,6 @@ export class LobbyComponent{
     this.signalRService.playerJoined$.subscribe(players => {
       this.players = players;
     });
-
-    // this.signalRService.gameText$.subscribe(text => {
-    //   console.log(text);
-    // })
-
-    // this.signalRService.gameTime$.subscribe(time => {
-    //   console.log(time);
-    // })
   }
 
   deleteLobby() {

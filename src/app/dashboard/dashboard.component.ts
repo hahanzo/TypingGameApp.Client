@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 })
 
 export class DashboardComponent {
+  lobbyUI: string = 'new-game-ui';
   difficulty: string = 'easy';
   timer: number = 60;
   lobbyId: string | null = null;
@@ -36,7 +37,7 @@ export class DashboardComponent {
   }
 
   createLobby() {
-    this.signalRService.createLobby(this.difficulty, this.timer);
+    this.signalRService.createLobby(this.difficulty, this.timer, this.lobbyUI);
   }
 
   deleteLobby() {

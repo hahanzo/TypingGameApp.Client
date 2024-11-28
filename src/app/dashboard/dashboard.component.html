@@ -10,6 +10,11 @@
         <option value="medium">Medium</option>
         <option value="hard">Hard</option>
       </select>
+      <label for="lobbyUI">Lobby UI:</label>
+      <select [(ngModel)]="lobbyUI" class="form-control">
+        <option value="new-game-ui">New UI</option>
+        <option value="game">Old UI</option>
+      </select>
 
       <label for="timer">Timer (seconds):</label>
       <input type="number" [(ngModel)]="timer" id="timer" min="30" max="300" class="form-control mb-4" />
